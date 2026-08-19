@@ -41,3 +41,18 @@ example
 # generated native folders
 /ios
 /android
+
+
+# env files
+.env
+server/.env
+
+# Graphify
+graphify-out/
+graph.json
+
+# Prisma AI assistant skills (generado automáticamente, no es código propio)
+server/.agents/
+server/.claude/
+server/.windsurf/
+server/skills-lock.json

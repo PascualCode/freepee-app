@@ -1,56 +1,65 @@
-# Welcome to your Expo app 👋
+# Punto de partida — App Web + Móvil
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
-
-## Get started
-
-1. Install dependencies
-
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## 1. Arrancar el proyecto Expo
 
 ```bash
-npm run reset-project
+npx create-expo-app@latest . --template
+npx expo install react-native-web react-dom
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Copia dentro las carpetas `app/`, `components/`, `lib/` de este paquete
+(sustituyen a las que genera el template).
 
-### Other setup steps
+## 2. Backend
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+```bash
+mkdir -p server && cd server
+npm init -y
+npm install fastify @fastify/cors prisma @prisma/client
+npx prisma init
+```
 
-## Learn more
+Sustituye `prisma/schema.prisma` generado por el de este paquete (ya incluye
+User, Marker, Comment y el índice geoespacial).
 
-To learn more about developing your project with Expo, look at the following resources:
+Configura `DATABASE_URL` en `server/.env`:
+```
+DATABASE_URL="postgresql://usuario:password@localhost:5432/tu_db"
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## 3. Instalar Graphify (recomendado, opcional)
 
-## Join the community
+Da a Claude Code un mapa consultable del proyecto en vez de tener que releer
+archivos cada vez — útil sobre todo cuando el código crezca y haya más
+relaciones cruzadas entre `lib/`, `app/` y `server/`.
 
-Join our community of developers creating universal apps.
+```bash
+uv tool install graphifyy
+graphify install
+```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Dentro de Claude Code, una vez tengas algo de código:
+```
+/graphify .
+```
+
+Esto genera `graphify-out/` (ya excluido en `.claudeignore` y
+`.graphifyignore` de este paquete). Con poco código aún no aporta mucho —
+tiene más sentido ejecutarlo cuando ya haya varios módulos conectados.
+
+## 4. Archivos incluidos en este paquete
+
+```
+CLAUDE.md              → contexto persistente del proyecto para Claude Code
+.claudeignore           → archivos que Claude Code no debe leer
+.graphifyignore         → archivos que Graphify no debe indexar
+prisma/schema.prisma    → modelos iniciales: User, Marker, Comment
+lib/maps/               → wrapper de mapas (nativo vs web)
+lib/api/client.ts       → cliente API compartido
+```
+
+## 5. Próximos pasos sugeridos
+1. Levantar auth básica (registro/login + JWT)
+2. CRUD de marcadores + integración con PostGIS
+3. Implementar `lib/maps/index.native.ts` y `lib/maps/index.web.ts`
+4. Comentarios y puntuaciones sobre marcadores
