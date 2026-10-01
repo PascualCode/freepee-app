@@ -6,6 +6,17 @@ hacer tus necesidades en paz — solo o con tu mascota. Empezando por Cáceres.
 > Proyecto en fase de pruebas cerradas con un grupo reducido de usuarios
 > reales, todavía sin lanzamiento público.
 
+## Capturas
+
+<p align="center">
+  <img src="docs/media/screenshot-welcome.jpg" width="280" alt="Pantalla de bienvenida de FreePee" />
+  <img src="docs/media/screenshot-map.jpg" width="280" alt="Mapa colaborativo con marcadores reales y ruta a pie activa" />
+</p>
+
+<p align="center">
+  <video src="https://github.com/PascualCode/freepee-app/raw/master/docs/media/demo.mp4" width="280" controls></video>
+</p>
+
 ## Qué hace
 
 - **Mapa en tiempo real** con los marcadores de la comunidad (tipo de baño,
