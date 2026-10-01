@@ -125,6 +125,17 @@ npx prisma studio     # explorador visual de la base de datos
 npx prisma migrate dev --name <nombre>   # nueva migración (¡no usar contra Supabase! ver Notas técnicas)
 ```
 
+## Repositorio
+**https://github.com/PascualCode/freepee-app** (público, cuenta
+`PascualCode`) — creado el 2026-08-31, con el commit inicial del scaffold
+ya existente en local más todo el trabajo acumulado desde entonces. Nombre
+del repo en minúsculas/kebab-case (`freepee-app`) a propósito distinto del
+slug técnico (`pipiapp`) — sigue el nombre de marca actual, ver Diseño →
+"Rebrand pipiApp → FreePee". Fuera del repo a propósito (gitignored en
+`server/.gitignore`): `server/scratch-*.ts` (scripts sueltos de depuración
+local) y `server/prod-*.png` (capturas de QA antiguas, de la rama web ya
+eliminada) — ninguno de los dos aporta a un repo con aspecto cuidado.
+
 ## Despliegue
 Primer despliegue real (2026-08-26), para probar con un grupo cerrado de
 usuarios reales — ver Estado del proyecto → "Fase del proyecto". Solo
