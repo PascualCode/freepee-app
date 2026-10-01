@@ -14,7 +14,7 @@ hacer tus necesidades en paz — solo o con tu mascota. Empezando por Cáceres.
 </p>
 
 <p align="center">
-  <video src="https://github.com/PascualCode/freepee-app/raw/master/docs/media/demo.mp4" width="280" controls></video>
+  <a href="docs/media/demo.mp4">🎥 Ver vídeo de la demo</a>
 </p>
 
 ## Qué hace

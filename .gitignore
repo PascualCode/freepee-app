@@ -53,6 +53,7 @@ server/.env
 # Graphify
 graphify-out/
 graph.json
+.graphifyignore
 
 # Prisma AI assistant skills (generado automáticamente, no es código propio)
 server/.agents/
@@ -61,3 +62,8 @@ server/.windsurf/
 server/skills-lock.json
 .vercel
 .env*
+
+# Config local de herramientas de desarrollo
+.claude/
+.claudeignore
+CLAUDE.md
