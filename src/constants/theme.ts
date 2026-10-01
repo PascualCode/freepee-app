@@ -3,8 +3,6 @@
  * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
  */
 
-import '@/global.css';
-
 import { Platform } from 'react-native';
 
 export const Colors = {
@@ -14,6 +12,13 @@ export const Colors = {
     backgroundElement: '#F0F0F3',
     backgroundSelected: '#E0E1E6',
     textSecondary: '#60646C',
+    // Paleta principal (amarillo) — reutilizar estos tokens en toda la app,
+    // nunca un valor hexadecimal suelto en una pantalla.
+    primary: '#F7B500', // amarillo vivo — botones/acciones primarias
+    primarySoft: '#FFF6DA', // amarillo pastel — fondos y estados secundarios
+    onPrimary: '#241C00', // texto/iconos sobre `primary` (el amarillo vivo no da contraste suficiente con blanco)
+    border: '#E4E4E7',
+    danger: '#D92D20',
   },
   dark: {
     text: '#ffffff',
@@ -21,6 +26,11 @@ export const Colors = {
     backgroundElement: '#212225',
     backgroundSelected: '#2E3135',
     textSecondary: '#B0B4BA',
+    primary: '#FFC629',
+    primarySoft: '#3A2C00',
+    onPrimary: '#1A1300',
+    border: '#33353A',
+    danger: '#F97066',
   },
 } as const;
 
@@ -43,12 +53,6 @@ export const Fonts = Platform.select({
     rounded: 'normal',
     mono: 'monospace',
   },
-  web: {
-    sans: 'var(--font-display)',
-    serif: 'var(--font-serif)',
-    rounded: 'var(--font-rounded)',
-    mono: 'var(--font-mono)',
-  },
 });
 
 export const Spacing = {
@@ -61,5 +65,14 @@ export const Spacing = {
   six: 64,
 } as const;
 
-export const BottomTabInset = Platform.select({ ios: 50, android: 80 }) ?? 0;
 export const MaxContentWidth = 800;
+
+// Escala de esquinas redondeadas — usar siempre uno de estos valores en
+// inputs, botones y tarjetas en vez de un número suelto, para que el look
+// "suave" se mantenga consistente en toda la app.
+export const Radius = {
+  small: 10,
+  medium: 16,
+  large: 24,
+  pill: 999,
+} as const;

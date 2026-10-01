@@ -18,9 +18,30 @@ model User {
   id        String     @id @default(cuid())
   email     String     @unique
   name      String
+  // Nullable a nivel de BD a propósito: las cuentas creadas antes de este
+  // campo (una cuenta real ya existía) no tienen uno y no se les inventa
+  // uno de oficio. El registro nuevo SÍ lo exige (validado en el handler,
+  // no aquí) — ver server/src/routes/auth.ts.
+  username  String?    @unique
   password  String
+  role      Role       @default(USER)
+  isActive  Boolean    @default(true)
+  deletedAt DateTime?
+  // Verificación de email — gatea la creación de marcadores/reseñas (nunca
+  // el login en sí, para no añadir fricción a un usuario real) hasta que
+  // se confirme la propiedad del correo, como primera capa contra bots que
+  // rellenen el mapa de contenido falso (ver CLAUDE.md). Cuentas creadas
+  // antes de esta migración se backfillearon a `true` — no se les puede
+  // pedir verificar algo que no existía al registrarse.
+  emailVerified              Boolean   @default(false)
+  // Token de un solo uso, con expiración; reenviar invalida el anterior
+  // sobrescribiéndolo, no hace falta una tabla aparte para esto.
+  verificationToken          String?   @unique
+  verificationTokenExpiresAt DateTime?
   markers   Marker[]
-  comments  Comment[]
+  reviews   Review[]
+  reports   Report[]
+  favorites Favorite[]
   createdAt DateTime   @default(now())
 }
 
@@ -30,21 +51,134 @@ model Marker {
   description String?
   latitude    Float
   longitude   Float
+  // Columna generada (STORED) a partir de latitude/longitude — Prisma no
+  // escribe en ella directamente, solo se usa para consultas geoespaciales
+  // vía $queryRaw, indexada con GIST para acelerar ST_DWithin/ST_Distance.
+  location    Unsupported("geography(Point, 4326)")?
+  type        MarkerType
+  priceType   PriceType?
+  amount      Float?
+  // Obligatorio a nivel de BD (migración 20260824_marker_gender_not_null) —
+  // decisión explícita del usuario para cerrar la ambigüedad que dejaba
+  // nullable: antes, editar un marcador antiguo sin género exigía elegir
+  // uno de los cuatro antes de poder guardar cualquier otro cambio, sin
+  // opción "sin especificar" en el formulario. Los marcadores creados antes
+  // de este campo se rellenaron con MIXTO en esa misma migración — ver
+  // CLAUDE.md → Notas técnicas.
+  gender      MarkerGender
+  // Imagen de cabecera, como data URL base64 — no hay bucket de object
+  // storage configurado en el proyecto, ver CLAUDE.md → Notas técnicas.
+  // Tamaño acotado en el propio handler (MAX_IMAGE_LENGTH en markers.ts).
+  imageUrl    String?
+  // Texto libre (2026-08-30, decisión explícita) — no un schedule
+  // estructurado por día, para admitir horarios irregulares o notas
+  // ("cerrado por obras") sin una UI de selección día a día.
+  openingHours     String?
+  // Nullable de verdad (a diferencia de gender): ausente = "sin
+  // especificar", no un cuarto valor del enum — ver MarkerWheelchairField,
+  // que sí ofrece una pill explícita para volver a este estado al editar.
+  wheelchairAccess WheelchairAccess?
   owner       User       @relation(fields: [ownerId], references: [id])
   ownerId     String
-  comments    Comment[]
+  reviews     Review[]
+  reports     Report[]
+  favoritedBy Favorite[]
   createdAt   DateTime   @default(now())
 
   @@index([latitude, longitude])
+  @@index([location], type: Gist)
 }
 
-model Comment {
+model Review {
   id        String   @id @default(cuid())
-  text      String
-  rating    Int      // 1-5
+  comodidad Int // 1-5
+  higiene   Int // 1-5
+  text      String?
   author    User     @relation(fields: [authorId], references: [id])
   authorId  String
-  marker    Marker   @relation(fields: [markerId], references: [id])
+  marker    Marker   @relation(fields: [markerId], references: [id], onDelete: Cascade)
+  markerId  String
+  reports   Report[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([authorId, markerId])
+}
+
+// Reporte de un marcador o de una reseña (nunca ambos) — moderación humana
+// vía Prisma Studio, no existe (ni debe crearse) un endpoint de
+// administración, mismo criterio que promocionar a ADMIN (ver CLAUDE.md →
+// Notas técnicas → Seguridad del campo role). Exactamente uno de
+// markerId/reviewId se rellena — validado en el handler, no en BD (mismo
+// criterio que validatePricing).
+model Report {
+  id         String       @id @default(cuid())
+  reason     ReportReason
+  details    String?
+  status     ReportStatus @default(PENDIENTE)
+  reporter   User         @relation(fields: [reporterId], references: [id])
+  reporterId String
+  marker     Marker?      @relation(fields: [markerId], references: [id], onDelete: Cascade)
+  markerId   String?
+  review     Review?      @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  reviewId   String?
+  createdAt  DateTime     @default(now())
+}
+
+enum MarkerType {
+  AIRE_LIBRE
+  PUBLICO
+  PRIVADO
+}
+
+enum MarkerGender {
+  MASCULINO
+  FEMENINO
+  MIXTO
+  PIPICAN
+}
+
+enum PriceType {
+  GRATIS
+  CONSUMICION
+  PRECIO
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+// Marcador guardado por un usuario — lista personal ("Favoritos"), nunca
+// visible para otros usuarios. `onDelete: Cascade` en ambas relaciones:
+// borrar el marcador o (en la práctica nunca, ver soft delete) el usuario
+// no debe dejar filas huérfanas.
+model Favorite {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  marker    Marker   @relation(fields: [markerId], references: [id], onDelete: Cascade)
   markerId  String
   createdAt DateTime @default(now())
+
+  @@unique([userId, markerId])
+}
+
+enum WheelchairAccess {
+  COMPLETA
+  PARCIAL
+  NINGUNA
+}
+
+enum ReportReason {
+  SITIO_CERRADO
+  INFORMACION_INCORRECTA
+  CONTENIDO_INAPROPIADO
+  OTRO
+}
+
+enum ReportStatus {
+  PENDIENTE
+  RESUELTO
+  DESCARTADO
 }

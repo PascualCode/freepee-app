@@ -1,65 +1,78 @@
-# Punto de partida — App Web + Móvil
+# FreePee
 
-## 1. Arrancar el proyecto Expo
+Mapa colaborativo de baños públicos. Crea, encuentra y valora sitios donde
+hacer tus necesidades en paz — solo o con tu mascota. Empezando por Cáceres.
+
+> Proyecto en fase de pruebas cerradas con un grupo reducido de usuarios
+> reales, todavía sin lanzamiento público.
+
+## Qué hace
+
+- **Mapa en tiempo real** con los marcadores de la comunidad (tipo de baño,
+  género, precio, horario, accesibilidad en silla de ruedas, foto de
+  cabecera).
+- **Búsqueda por cercanía** con distancia y tiempo a pie reales (vía
+  OpenRouteService), no solo línea recta.
+- **Reseñas** por comodidad e higiene, con moderación básica (reportar
+  marcador/reseña).
+- **Favoritos**, perfil con estadísticas, y gestión de los marcadores
+  propios.
+- **Cuentas con verificación de email** y varias capas antibots (CAPTCHA,
+  rate limiting, límite diario de marcadores, bloqueo de emails
+  desechables).
+
+## Stack
+
+| | |
+|---|---|
+| App móvil | [Expo](https://expo.dev) + Expo Router (React Native, Android — iOS aparcado) |
+| Mapas | [MapLibre](https://maplibre.org) + tiles de OpenStreetMap, sin API key |
+| Backend | Node.js + [Fastify](https://fastify.dev) |
+| Base de datos | PostgreSQL + [PostGIS](https://postgis.net) ([Supabase](https://supabase.com)) vía [Prisma](https://www.prisma.io) |
+| Auth | JWT propio, verificación de email (Brevo) |
+| Despliegue | Backend en [Railway](https://railway.app), app en [EAS Build](https://expo.dev/eas) |
+
+## Estructura
+
+```
+src/app/        pantallas (Expo Router)
+src/components/ UI compartida
+src/hooks/      lógica de datos y estado compartido
+src/constants/  theme, marca
+lib/api/        cliente de la API
+lib/auth/       sesión (token + contexto)
+lib/maps/       abstracción sobre MapLibre
+server/         API (Fastify + Prisma)
+```
+
+## Desarrollo local
+
+### App
 
 ```bash
-npx create-expo-app@latest . --template
-npx expo install react-native-web react-dom
+npm install
+npm run dev          # Expo — pulsa 'a' para Android
 ```
 
-Copia dentro las carpetas `app/`, `components/`, `lib/` de este paquete
-(sustituyen a las que genera el template).
-
-## 2. Backend
+### Backend
 
 ```bash
-mkdir -p server && cd server
-npm init -y
-npm install fastify @fastify/cors prisma @prisma/client
-npx prisma init
+cd server
+npm install
+npx prisma generate
+npm run dev           # Fastify en localhost:3000
 ```
 
-Sustituye `prisma/schema.prisma` generado por el de este paquete (ya incluye
-User, Marker, Comment y el índice geoespacial).
-
-Configura `DATABASE_URL` en `server/.env`:
-```
-DATABASE_URL="postgresql://usuario:password@localhost:5432/tu_db"
-```
-
-## 3. Instalar Graphify (recomendado, opcional)
-
-Da a Claude Code un mapa consultable del proyecto en vez de tener que releer
-archivos cada vez — útil sobre todo cuando el código crezca y haya más
-relaciones cruzadas entre `lib/`, `app/` y `server/`.
+Variables de entorno necesarias (`server/.env`): `DATABASE_URL`,
+`JWT_SECRET`, `JWT_EXPIRES_IN`, `BREVO_API_KEY`, `BREVO_SENDER_EMAIL`,
+`TURNSTILE_SECRET_KEY`, `ORS_API_KEY`. En la raíz del proyecto
+(`.env`): `EXPO_PUBLIC_TURNSTILE_SITE_KEY`. Ninguna se incluye en el
+repo — pide las claves de desarrollo si las necesitas.
 
 ```bash
-uv tool install graphifyy
-graphify install
+npx prisma studio      # explorador visual de la base de datos
 ```
 
-Dentro de Claude Code, una vez tengas algo de código:
-```
-/graphify .
-```
+## Licencia
 
-Esto genera `graphify-out/` (ya excluido en `.claudeignore` y
-`.graphifyignore` de este paquete). Con poco código aún no aporta mucho —
-tiene más sentido ejecutarlo cuando ya haya varios módulos conectados.
-
-## 4. Archivos incluidos en este paquete
-
-```
-CLAUDE.md              → contexto persistente del proyecto para Claude Code
-.claudeignore           → archivos que Claude Code no debe leer
-.graphifyignore         → archivos que Graphify no debe indexar
-prisma/schema.prisma    → modelos iniciales: User, Marker, Comment
-lib/maps/               → wrapper de mapas (nativo vs web)
-lib/api/client.ts       → cliente API compartido
-```
-
-## 5. Próximos pasos sugeridos
-1. Levantar auth básica (registro/login + JWT)
-2. CRUD de marcadores + integración con PostGIS
-3. Implementar `lib/maps/index.native.ts` y `lib/maps/index.web.ts`
-4. Comentarios y puntuaciones sobre marcadores
+Privado — todos los derechos reservados.

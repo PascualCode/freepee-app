@@ -1,8 +1,7 @@
-// Punto único de entrada para mapas — nunca importar react-native-maps
-// o react-map-gl directamente fuera de aquí.
+// Punto único de entrada para mapas — nunca importar
+// @maplibre/maplibre-react-native directamente fuera de aquí.
 //
-// Uso: `import { MapView, Marker } from '@/lib/maps'`
-// El bundler resuelve automáticamente index.native.ts o index.web.ts
-// según la plataforma (convención de Expo/Metro).
-
+// Uso: `import { MapView } from '@/lib/maps'` — MapView recibe los
+// marcadores como prop (`markers: MapMarkerData[]`), no como children.
+export * from './map-view';
 export * from './types';
