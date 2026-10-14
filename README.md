@@ -56,34 +56,6 @@ lib/maps/       abstracción sobre MapLibre
 server/         API (Fastify + Prisma)
 ```
 
-## Desarrollo local
-
-### App
-
-```bash
-npm install
-npm run dev          # Expo — pulsa 'a' para Android
-```
-
-### Backend
-
-```bash
-cd server
-npm install
-npx prisma generate
-npm run dev           # Fastify en localhost:3000
-```
-
-Variables de entorno necesarias (`server/.env`): `DATABASE_URL`,
-`JWT_SECRET`, `JWT_EXPIRES_IN`, `BREVO_API_KEY`, `BREVO_SENDER_EMAIL`,
-`TURNSTILE_SECRET_KEY`, `ORS_API_KEY`. En la raíz del proyecto
-(`.env`): `EXPO_PUBLIC_TURNSTILE_SITE_KEY`. Ninguna se incluye en el
-repo — pide las claves de desarrollo si las necesitas.
-
-```bash
-npx prisma studio      # explorador visual de la base de datos
-```
-
 ## Licencia
 
 Privado — todos los derechos reservados.
